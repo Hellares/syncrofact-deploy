@@ -9,7 +9,7 @@ services:
   # ========== INFRAESTRUCTURA ==========
 
   db:
-    image: mysql:8.0
+    image: mysql:8.0.36
     container_name: syncrofact-db
     restart: always
     environment:
