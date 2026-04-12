@@ -1,0 +1,155 @@
+# =============================================================================
+# Syncrofact - Stack Facturacion Electronica
+# Desplegado via Portainer (repo syncrofact-deploy)
+# Dominio: syncrofact.net.pe
+# =============================================================================
+
+services:
+
+  # ========== INFRAESTRUCTURA ==========
+
+  db:
+    image: mysql:8.0
+    container_name: syncrofact-db
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+    volumes:
+      - db_data:/var/lib/mysql
+      - ./mysql-init:/docker-entrypoint-initdb.d:ro
+    ports:
+      - "127.0.0.1:3306:3306"
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      retries: 5
+      start_period: 30s
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+
+  redis:
+    image: redis:7-alpine
+    container_name: syncrofact-redis
+    restart: always
+    command: redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy allkeys-lru
+    volumes:
+      - redis_data:/data
+    ports:
+      - "127.0.0.1:6379:6379"
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+
+  # ========== AMBIENTE BETA ==========
+
+  app-beta:
+    image: api-sunat:latest
+    container_name: syncrofact-app-beta
+    restart: always
+    volumes:
+      - storage_beta:/var/www/html/storage/app/public
+    environment:
+      APP_NAME: "Syncrofact - BETA"
+      APP_ENV: production
+      APP_DEBUG: false
+      APP_KEY: ${APP_KEY_BETA}
+      APP_URL: https://beta.syncrofact.net.pe
+      DB_CONNECTION: mysql
+      DB_HOST: db
+      DB_PORT: 3306
+      DB_DATABASE: facturacion_beta
+      DB_USERNAME: root
+      DB_PASSWORD: ${DB_ROOT_PASSWORD}
+      CACHE_STORE: redis
+      QUEUE_CONNECTION: redis
+      REDIS_CLIENT: phpredis
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_DB: 0
+      REDIS_PREFIX: beta_
+      SUNAT_ENVIRONMENT: beta
+      FACTILIZA_TOKEN: ${FACTILIZA_TOKEN}
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+
+  frontend-beta:
+    image: admin-facturacion:latest
+    container_name: syncrofact-frontend-beta
+    restart: always
+    environment:
+      BACKEND_HOST: app-beta
+    ports:
+      - "127.0.0.1:3001:3000"
+    depends_on:
+      - app-beta
+
+  # ========== AMBIENTE PRODUCCION ==========
+
+  app-prod:
+    image: api-sunat:latest
+    container_name: syncrofact-app-prod
+    restart: always
+    volumes:
+      - storage_prod:/var/www/html/storage/app/public
+    environment:
+      APP_NAME: "Syncrofact"
+      APP_ENV: production
+      APP_DEBUG: false
+      APP_KEY: ${APP_KEY_PROD}
+      APP_URL: https://app.syncrofact.net.pe
+      DB_CONNECTION: mysql
+      DB_HOST: db
+      DB_PORT: 3306
+      DB_DATABASE: facturacion_prod
+      DB_USERNAME: root
+      DB_PASSWORD: ${DB_ROOT_PASSWORD}
+      CACHE_STORE: redis
+      QUEUE_CONNECTION: redis
+      REDIS_CLIENT: phpredis
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_DB: 1
+      REDIS_PREFIX: prod_
+      SUNAT_ENVIRONMENT: produccion
+      FACTILIZA_TOKEN: ${FACTILIZA_TOKEN}
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+
+  frontend-prod:
+    image: admin-facturacion-prod:latest
+    container_name: syncrofact-frontend-prod
+    restart: always
+    environment:
+      BACKEND_HOST: app-prod
+    ports:
+      - "127.0.0.1:3002:3000"
+    depends_on:
+      - app-prod
+
+volumes:
+  db_data:
+  redis_data:
+  storage_beta:
+  storage_prod:
+
+networks:
+  default:
+    name: portainer_default
+    external: true
