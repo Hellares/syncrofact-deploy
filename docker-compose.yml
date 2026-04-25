@@ -55,6 +55,7 @@ services:
       APP_NAME: "Syncrofact - BETA"
       APP_ENV: production
       APP_DEBUG: false
+      LOG_LEVEL: ${LOG_LEVEL:-info}
       APP_KEY: ${APP_KEY_BETA}
       APP_URL: https://beta.syncrofact.net.pe
       DB_CONNECTION: mysql
@@ -113,6 +114,7 @@ services:
       APP_NAME: "Syncrofact"
       APP_ENV: production
       APP_DEBUG: false
+      LOG_LEVEL: ${LOG_LEVEL:-info}
       APP_KEY: ${APP_KEY_PROD}
       APP_URL: https://app.syncrofact.net.pe
       DB_CONNECTION: mysql
