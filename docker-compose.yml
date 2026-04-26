@@ -73,6 +73,9 @@ services:
       REDIS_PREFIX: beta_
       SUNAT_ENVIRONMENT: beta
       FACTILIZA_TOKEN: ${FACTILIZA_TOKEN}
+      SENTRY_LARAVEL_DSN: ${SENTRY_LARAVEL_DSN}
+      SENTRY_ENVIRONMENT: beta
+      SENTRY_TRACES_SAMPLE_RATE: ${SENTRY_TRACES_SAMPLE_RATE:-0}
       MAIL_MAILER: ${MAIL_MAILER:-smtp}
       MAIL_HOST: ${MAIL_HOST:-email-smtp.us-east-1.amazonaws.com}
       MAIL_PORT: ${MAIL_PORT:-587}
@@ -132,6 +135,9 @@ services:
       REDIS_PREFIX: prod_
       SUNAT_ENVIRONMENT: produccion
       FACTILIZA_TOKEN: ${FACTILIZA_TOKEN}
+      SENTRY_LARAVEL_DSN: ${SENTRY_LARAVEL_DSN}
+      SENTRY_ENVIRONMENT: production
+      SENTRY_TRACES_SAMPLE_RATE: ${SENTRY_TRACES_SAMPLE_RATE:-0}
       MAIL_MAILER: ${MAIL_MAILER:-smtp}
       MAIL_HOST: ${MAIL_HOST:-email-smtp.us-east-1.amazonaws.com}
       MAIL_PORT: ${MAIL_PORT:-587}
